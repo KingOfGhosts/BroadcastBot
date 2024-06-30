@@ -30,9 +30,12 @@ Bot = Client(
 async def _(bot, cmd):
     await handle_user_status(bot, cmd)
 
-@Bot.on_message(filters.command("start") & filters.private)
+@Bot.on_message(filters.private & filters.command("start") & filters.private)
 async def startprivate(client, message):
     # return
+    if m.from_user.id not in AUTH_USERS:
+        await m.delete()
+        return
     chat_id = message.from_user.id
     if not await db.is_user_exist(chat_id):
         data = await client.get_me()
@@ -60,8 +63,11 @@ async def startprivate(client, message):
     raise StopPropagation
 
 
-@Bot.on_message(filters.command("settings"))
+@Bot.on_message(filters.private & filters.command("settings"))
 async def opensettings(bot, cmd):
+    if m.from_user.id not in AUTH_USERS:
+        await m.delete()
+        return
     user_id = cmd.from_user.id
     await cmd.reply_text(
         f"`Here You Can Set Your Settings:`\n\nSuccessfully setted notifications to **{await db.get_notif(user_id)}**",
